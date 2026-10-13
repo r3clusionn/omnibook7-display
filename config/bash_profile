@@ -1,0 +1,7 @@
+# In ~/.bash_profile, for a session started with xinit on tty1: X at depth 30
+# (10 bits per channel), and the usual depth 24 if X can't start at 30.
+if [ "$(tty)" = /dev/tty1 ]; then
+	xinit -- :0 vt1 -keeptty -nolisten tcp -depth 30 ||
+		xinit -- :0 vt1 -keeptty -nolisten tcp
+	exit
+fi
