@@ -2,7 +2,7 @@
 
 The best picture the HP OmniBook 7's OLED can show on Linux with X11 and an AMD GPU: 10 bits per channel from programs to the panel, accurate colours on its wide gamut done by the display hardware, mpv set up for quality, and the fixes for programs that break when X runs at 10 bits. It is two small C tools (`colormode` and `grab`), a few config files, and what was measured along the way. Most of it applies to any wide-gamut panel on an AMD GPU under Xorg.
 
-**Status:** in daily use on an HP OmniBook 7 14-kh0xxx (Ryzen AI 9 HX 475, Radeon 890M, Samsung 2880x1800 120 Hz OLED) with Gentoo, Xorg 21.1, xf86-video-amdgpu 25.0, Mesa 26.1, mpv 0.41 and dwm. HDR isn't covered: X11 can't send HDR metadata to the panel.
+**Status:** in daily use on an HP OmniBook 7 14-kh0xxx (Ryzen AI 9 HX 475, Radeon 890M, Samsung 2880x1800 120 Hz OLED) with Gentoo, Xorg 21.1, xf86-video-amdgpu 25.0, Mesa 26.1, mpv 0.41 and dwm. HDR for fullscreen video is in [x11-amdgpu-hdr](https://github.com/r3clusionn/x11-amdgpu-hdr) (a patch for the X driver; `colormode` here includes its HDR modes).
 
 ![Terminal output on a dark background, three commands. "colormode status" prints "eDP: srgb" and the panel's primaries from its EDID: "R 0.683,0.316  G 0.245,0.714  B 0.140,0.044  white 0.3135,0.3291". "doas cat /sys/kernel/debug/dri/1/eDP-1/output_bpc" prints "Maximum: 10". "mpv -v video.mkv 2>&1 | grep -E "Picked surface|Dithering to"" prints "[vo/gpu-next/libplacebo] Picked surface configuration 0: VK_FORMAT_A2R10G10B10_UNORM_PACK32 + VK_COLOR_SPACE_SRGB_NONLINEAR_KHR" and "[vo/gpu-next/libplacebo] Dithering to 10 bit depth"](docs/images/terminal.png)
 
@@ -13,6 +13,7 @@ The best picture the HP OmniBook 7's OLED can show on Linux with X11 and an AMD 
 - **Screenshots at depth 30 (`grab`).** shotgun only reads 8-bit screens and writes empty files at depth 30. `grab` reads any depth and writes a PNG; it takes 13 ms for a region.
 - **mpv at its best.** `gpu-next` on Vulkan with a 10-bit swapchain, mpv's high-quality scaling, 10-bit dithering, and frames timed to the panel's 120 Hz.
 - **Shader advice from a measured test.** ArtCNN with chroma-from-luma prediction reconstructs anime closest to the source and runs in real time on the Radeon 890M (see Measurements).
+- **HDR for fullscreen video.** With the patched X driver from [x11-amdgpu-hdr](https://github.com/r3clusionn/x11-amdgpu-hdr), `colormode watch` puts the panel in HDR mode while an HDR video is fullscreen and on screen, and `colormode auto on|off` switches that on or off.
 - **Fixes for depth 30.** Chromium-based browsers and CEF apps (tested: Thorium and a CEF program) play video as a white rectangle or paint nothing until they use ANGLE over EGL.
 
 ## How to install
@@ -38,7 +39,8 @@ Then, from `config/`:
 ```sh
 colormode status      # srgb or native, and the panel's primaries
 colormode srgb        # accurate colours (what xinitrc runs at login)
-colormode native      # the panel's full gamut (HDR work, or to compare)
+colormode native      # the panel's full gamut (to compare)
+colormode auto on|off # HDR for fullscreen HDR video (needs x11-amdgpu-hdr's driver patch)
 
 grab shot.png                         # the whole screen
 grab -g 800x400+100+100 - | xclip -selection clipboard -t image/png
@@ -110,9 +112,9 @@ Side by side, ArtCNN keeps the painted texture of backgrounds and gives crisp li
 
 - X11 with the amdgpu X driver only: the modesetting driver doesn't expose `CTM` and the LUTs through RandR, and Wayland compositors have their own colour management.
 - The colours come from the panel's EDID, which is the factory's description, not a measurement of this panel. A colorimeter would do better.
-- `colormode srgb` shows wide-gamut content (rare outside HDR) clipped to sRGB. Use `colormode native` for HDR experiments.
+- `colormode srgb` shows wide-gamut content (rare outside HDR) clipped to sRGB; HDR video gets the full gamut in HDR mode (x11-amdgpu-hdr).
 - At depth 30, any program that needs a 24-bit visual fails until it is fixed or configured (as with Chromium above). X's legacy gamma ramp (xgamma, redshift-style tools) has no effect at depth 30.
-- No HDR: X11 can't pass HDR metadata to the panel.
+- HDR is fullscreen only and needs a patched X driver: see [x11-amdgpu-hdr](https://github.com/r3clusionn/x11-amdgpu-hdr).
 
 ## License
 
