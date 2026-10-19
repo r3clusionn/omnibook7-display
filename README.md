@@ -18,7 +18,7 @@ The best picture the HP OmniBook 7's OLED can show on Linux with X11 and an AMD 
 
 ## How to install
 
-Requires Xorg with the amdgpu driver (xf86-video-amdgpu: it exposes the colour pipeline that `colormode` uses), a C compiler, libX11, libXrandr and zlib. mpv with Vulkan for the mpv settings; hacksaw and xclip for the screenshot key.
+Requires Xorg with the amdgpu driver (xf86-video-amdgpu: it exposes the colour pipeline that `colormode` uses), a C compiler, libX11, libXrandr and zlib. mpv with Vulkan for the mpv settings; a region selector ([xregion](https://github.com/r3clusionn/xregion)) and xclip for the screenshot key.
 
 ```sh
 git clone https://github.com/r3clusionn/omnibook7-display
@@ -31,7 +31,7 @@ Then, from `config/`:
 - **Depth 30:** with xinit, the lines in `config/bash_profile` start X at depth 30 and fall back to depth 24 if that fails. With a display manager or startx, put `config/xorg-depth30.conf` in `/etc/X11/xorg.conf.d/` instead (no fallback there, and not tested on this laptop, which uses the xinit lines; keep a text console ready to remove it). Log out and back in.
 - **Colours at login:** add the line in `config/xinitrc` to `~/.xinitrc` (or your session's autostart).
 - **mpv:** copy `config/mpv.conf` to `~/.config/mpv/mpv.conf`. Its `dither-depth=10` assumes X at depth 30; at depth 24 set it back to `auto`.
-- **Chromium, Thorium, Chrome and CEF apps:** start them with `--use-angle=gl-egl` (in their launcher or desktop file).
+- **Chromium, Thorium, Chrome and CEF apps:** start them with `--use-angle=gl-egl` (in their launcher or desktop file). That fixes video but leaves Chromium compositing on the CPU at depth 30; Thorium on this laptop uses the `xcb8bit.so` shim from [scripts](https://github.com/r3clusionn/scripts) with ANGLE on Vulkan to composite on the GPU (launcher in [thorium-gentoo](https://github.com/r3clusionn/thorium-gentoo)).
 - **Screenshots:** bind `grab` instead of shotgun; `config/dwm-screenshot.h` is the dwm line.
 
 ## How to use
